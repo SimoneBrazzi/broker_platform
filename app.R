@@ -1,10 +1,4 @@
-library(tidyverse)
-library(shiny)
-library(bslib)
-library(bsicons)
-library(gt)
-library(tidyquant)
-library(usethis)
+source("global.R")
 
 # Define UI for application that draws a histogram
 ui <- page_navbar(
@@ -25,10 +19,21 @@ ui <- page_navbar(
                 actionButton(
                     inputId = "submit_exchange",
                     label = "Submit"
-                )
+                ),
+                selectizeInput(
+                    inputId = "select_stock_exchange",
+                    label = "Select Stock from Exchange",
+                    choices = NULL,
+                    selected = NULL,
+                    multiple = TRUE
+                ),
+                actionButton(
+                    inputId = "submit_stock_exchange",
+                    label = "Submit"
+                ),
             ),
-            render_gt("exchange_table"),
-            render_gt("stock_exchange_table"),
+            gt_output("exchange_table"),
+            gt_output("stock_exchange_table"),
         ),
         
     ),
@@ -37,16 +42,50 @@ ui <- page_navbar(
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
     
+    ### PAGE 1 ###
+    selected_exchange <- reactiveVal(NULL)
+    stocks_list <- reactiveVal(NULL)
+    
+    # EXCHANGE
     exchange_data <- eventReactive(input$submit_exchange, {
-        tq_exchange(input$select_exchange)
+        req(input$select_exchange)
+        selected_exchange(input$select_exchange)
+        data <- tq_exchange(input$select_exchange)
+        stocks_list(data$symbol)
+        data
     })
-    output$exchange_table <- render_gt(
+    # update exchange stock selection
+    observeEvent(input$submit_exchange, {
+        updateSelectizeInput(
+            session,
+            inputId = "select_stock_exchange",
+            choices = stocks_list(),
+            server = TRUE
+            )
+    })
+    # render exchange data
+    output$exchange_table <- render_gt({
+        req(exchange_data())
         exchange_data() |> 
             gt() |> 
             opt_interactive()
-    )
+    })
+    ### PAGE 2 - STOCK DATA ###
+    stock_data <- eventReactive(input$submit_stock_exchange, {
+        req(input$select_stock_exchange)
+        tq_get(input$select_stock_exchange, from = Sys.Date() - 1, to = Sys.Date())
+    })
+    
+    # Render stock table
+    output$stock_exchange_table <- render_gt({
+        req(stock_data())
+        stock_data() |> 
+            gt() |> 
+            opt_interactive()
+    })
+    
     
     
 }
