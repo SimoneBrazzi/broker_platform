@@ -4,6 +4,7 @@ library(bslib)
 library(bsicons)
 library(gt)
 library(tidyquant)
+library(usethis)
 
 # Define UI for application that draws a histogram
 ui <- page_navbar(
