@@ -1,0 +1,12 @@
+name: broker_platform
+title: broker_platform
+username: d4jtd9-simonebrazzi
+account: d4jtd9-simonebrazzi
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14238578
+bundleId: 9949607
+url: https://d4jtd9-simonebrazzi.shinyapps.io/broker_platform/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
